@@ -1,0 +1,6 @@
+/target
+.env
+*.code-workspace
+*.db
+/posters
+/.vscode
