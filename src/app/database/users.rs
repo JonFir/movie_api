@@ -1,6 +1,6 @@
 use uuid::Uuid;
 
-use super::{db::DB, entity::user::User, errors::Error};
+use super::{db::DB, entity::User, errors::Error};
 
 impl DB {
     pub async fn create_user(
@@ -24,7 +24,7 @@ impl DB {
         .map_err(|error| {
             let e = error.as_database_error().and_then(|e| e.code());
             match e {
-                Some(err) if err.eq("2067") => Error::UserAlreadyExist(error),
+                Some(err) if err.eq("2067") => Error::AlreadyExist(error),
                 _ => Error::Other(error),
             }
         })?;
@@ -48,7 +48,7 @@ impl DB {
         )
         .fetch_optional(&self.pool)
         .await
-        .map_err(|e| Error::UserNotFound(e))?;
+        .map_err(|e| Error::NotFound(e))?;
         Ok(user)
     }
 
@@ -64,7 +64,7 @@ impl DB {
         )
         .fetch_optional(&self.pool)
         .await
-        .map_err(|e| Error::UserNotFound(e))
+        .map_err(|e| Error::NotFound(e))
     }
 
     pub async fn set_remember_tokens(&self, id: &str, token: &str) -> Result<(), Error> {

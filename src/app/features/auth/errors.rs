@@ -36,8 +36,8 @@ impl Into<Option<app::errors::Error>> for Error {
 impl From<app::database::errors::Error> for Error {
     fn from(error: app::database::errors::Error) -> Self {
         match error {
-            app::database::errors::Error::UserAlreadyExist(_) => Error::UserAlreadyExist(error),
-            app::database::errors::Error::UserNotFound(_) => Error::QueryFail(error),
+            app::database::errors::Error::AlreadyExist(_) => Error::UserAlreadyExist(error),
+            app::database::errors::Error::NotFound(_) => Error::QueryFail(error),
             app::database::errors::Error::Other(_) => Error::QueryFail(error),
         }
     }

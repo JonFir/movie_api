@@ -2,9 +2,9 @@ use std::fmt;
 
 #[derive(Debug)]
 pub enum Error {
-    UserAlreadyExist(sqlx::error::Error),
     Other(sqlx::error::Error),
-    UserNotFound(sqlx::error::Error),
+    AlreadyExist(sqlx::error::Error),
+    NotFound(sqlx::error::Error),
 }
 impl std::error::Error for Error {}
 
