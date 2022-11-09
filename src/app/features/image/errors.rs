@@ -2,13 +2,14 @@ use std::fmt;
 
 use actix_web::error::BlockingError;
 
-use crate::app::{self, database};
+use crate::app::{self, database, features::auth::errors, posters};
 
 #[derive(Debug)]
 pub enum Error {
     CorruptedPath,
     IncorrectFiletype,
     FileNotFound,
+    PosterError(posters::errors::Error),
     FSError(std::io::Error),
     BlockError(BlockingError),
 }

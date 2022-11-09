@@ -4,6 +4,7 @@ use std::fmt;
 pub enum Error {
     Auth(crate::app::features::auth::errors::Error),
     Image(crate::app::features::image::errors::Error),
+    Movie(crate::app::features::movie::errors::Error),
 }
 impl std::error::Error for Error {}
 

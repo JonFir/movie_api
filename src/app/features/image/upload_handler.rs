@@ -10,6 +10,7 @@ use serde::Serialize;
 
 use crate::app::{
     error_response::{ErrorMeta, ErrorResponse},
+    posters::posters,
     response_payload::ResponsePayload,
     state::AppState,
 };
@@ -56,22 +57,14 @@ async fn make_response(body: Bytes, data: Data<Arc<AppState>>) -> Result<Respons
     }
 
     let id = uuid::Uuid::new_v4().to_string();
-    let path = Path::new(".")
-        .join(&data.environment.posters_path)
-        .join(&id)
-        .to_str()
-        .ok_or(Error::CorruptedPath)?
-        .to_owned();
+    let path = posters::make_poster_path(&id, &data.environment.posters_path)
+        .ok_or(Error::CorruptedPath)?;
 
-    let mut file = web::block(|| std::fs::File::create(path))
-        .await
-        .map_err(|e| Error::BlockError(e))?
-        .map_err(|e| Error::FSError(e))?;
-    let result = web::block(move || file.write(&bytes))
+    let result = web::block(move || posters::safe_poster(&path, &bytes))
         .await
         .map_err(|e| Error::BlockError(e))?
         .map(|_| Response { poster_id: id })
-        .map_err(|e| Error::FSError(e));
+        .map_err(|e| Error::PosterError(e));
     result
 }
 

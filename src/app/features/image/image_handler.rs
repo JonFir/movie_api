@@ -10,6 +10,7 @@ use file_format::FileFormat;
 
 use crate::app::{
     error_response::{ErrorMeta, ErrorResponse},
+    posters,
     state::AppState,
 };
 
@@ -42,15 +43,11 @@ pub async fn handler(
 }
 
 async fn make_response(id: String, data: Data<Arc<AppState>>) -> Result<HttpResponse, Error> {
-    let path = Path::new(".")
-        .join(&data.environment.posters_path)
-        .join(&id)
-        .to_str()
-        .ok_or(Error::CorruptedPath)?
-        .to_owned();
+    let path = posters::posters::make_poster_path(&id, &data.environment.posters_path)
+        .ok_or(Error::CorruptedPath)?;
 
     let file = web::block(|| {
-        if fs::metadata(&path).is_ok() {
+        if posters::posters::is_exist(&path) {
             fs::read(path).map_err(|e| Error::FSError(e))
         } else {
             Err(Error::FileNotFound)

@@ -1,26 +1,17 @@
-use chrono::{DateTime, Utc};
-
 use super::{db::DB, entity::Movie, errors::Error};
 impl DB {
-    pub async fn create_movie(
-        &self,
-        title: String,
-        director: String,
-        relise_date: i16,
-        rating: i8,
-        poster_id: String,
-    ) -> Result<Movie, Error> {
+    pub async fn create_movie(&self, movie: Movie) -> Result<Movie, Error> {
         let created_at = chrono::offset::Utc::now();
         let result = sqlx::query!(
             "
         INSERT INTO movies (title, director, relise_date, rating, poster_id, created_at) 
         VALUES ($1, $2, $3, $4, $5, $6)",
-            title,
-            director,
-            relise_date,
-            rating,
-            poster_id,
-            created_at,
+            movie.title,
+            movie.director,
+            movie.relise_date,
+            movie.rating,
+            movie.poster_id,
+            movie.created_at,
         )
         .execute(&self.pool)
         .await
@@ -32,17 +23,8 @@ impl DB {
             }
         })?;
         let id = result.last_insert_rowid();
-
-        let user = Movie {
-            id,
-            title,
-            director,
-            relise_date,
-            rating,
-            poster_id,
-            created_at,
-        };
-        Ok(user)
+        let movie = Movie { id, ..movie };
+        Ok(movie)
     }
 
     pub async fn find_movie_by_id(&self, id: i64) -> Result<Option<Movie>, Error> {
@@ -74,7 +56,7 @@ impl DB {
         Ok(movie)
     }
     pub async fn delete_movie(&self, id: i64) -> Result<(), Error> {
-        let result = sqlx::query!(
+        sqlx::query!(
             "DELETE FROM movies
             WHERE id = $1",
             id,

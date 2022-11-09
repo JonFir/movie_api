@@ -32,6 +32,11 @@ pub async fn run(address: (String, u16), state: Arc<AppState>) -> Result<(), std
             })
             .service(features::image::image)
             .service(features::image::upload);
+        let movies_scope = web::scope("/movies")
+            .wrap(Middleware {
+                app_state: Arc::clone(&state),
+            })
+            .service(features::movie::create);
 
         // upload_handler
         let global_scope = hello;
@@ -41,6 +46,7 @@ pub async fn run(address: (String, u16), state: Arc<AppState>) -> Result<(), std
             .service(auth_scope)
             .service(api_scope)
             .service(image_scope)
+            .service(movies_scope)
             .service(global_scope)
             .app_data(web::PayloadConfig::new(
                 usize::try_from(upload_file_size_limit).unwrap(),
