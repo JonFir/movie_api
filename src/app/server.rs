@@ -36,7 +36,8 @@ pub async fn run(address: (String, u16), state: Arc<AppState>) -> Result<(), std
             .wrap(Middleware {
                 app_state: Arc::clone(&state),
             })
-            .service(features::movie::create);
+            .service(features::movie::create)
+            .service(features::movie::movie);
 
         // upload_handler
         let global_scope = hello;

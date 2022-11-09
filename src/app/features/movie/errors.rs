@@ -8,8 +8,7 @@ use crate::app;
 pub enum Error {
     PosterNotFound,
     CorruptedPosterPath,
-    AlreadyExist(app::database::errors::Error),
-    NotFound(app::database::errors::Error),
+    NotFound,
     QueryFail(app::database::errors::Error),
     BlockError(BlockingError),
 }
@@ -36,8 +35,8 @@ impl Into<Option<app::errors::Error>> for Error {
 impl From<app::database::errors::Error> for Error {
     fn from(error: app::database::errors::Error) -> Self {
         match error {
-            app::database::errors::Error::AlreadyExist(_) => Error::AlreadyExist(error),
-            app::database::errors::Error::NotFound(_) => Error::NotFound(error),
+            app::database::errors::Error::AlreadyExist(_) => Error::QueryFail(error),
+            app::database::errors::Error::NotFound(_) => Error::QueryFail(error),
             app::database::errors::Error::Other(_) => Error::QueryFail(error),
         }
     }

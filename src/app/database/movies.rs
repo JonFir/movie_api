@@ -36,7 +36,7 @@ impl DB {
         )
         .fetch_optional(&self.pool)
         .await
-        .map_err(|e| Error::NotFound(e))?;
+        .map_err(|e| Error::Other(e))?;
         Ok(movie)
     }
     pub async fn all_movies(&self, cursor: i64, count: i64) -> Result<Vec<Movie>, Error> {
@@ -51,7 +51,7 @@ impl DB {
         )
         .fetch_all(&self.pool)
         .await
-        .map_err(|e| Error::NotFound(e))?;
+        .map_err(|e| Error::Other(e))?;
         Ok(movie)
     }
     pub async fn delete_movie(&self, id: i64) -> Result<(), Error> {
@@ -62,7 +62,7 @@ impl DB {
         )
         .execute(&self.pool)
         .await
-        .map_err(|e| Error::NotFound(e))?;
+        .map_err(|e| Error::Other(e))?;
         Ok(())
     }
 }
