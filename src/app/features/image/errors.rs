@@ -2,7 +2,7 @@ use std::fmt;
 
 use actix_web::error::BlockingError;
 
-use crate::app::{self, database, features::auth::errors, posters};
+use crate::app::{self, posters};
 
 #[derive(Debug)]
 pub enum Error {

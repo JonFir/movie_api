@@ -1,4 +1,4 @@
-use std::{fs, path::Path, sync::Arc};
+use std::{fs, sync::Arc};
 
 use actix_web::{
     get,

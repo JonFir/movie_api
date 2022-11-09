@@ -1,7 +1,6 @@
 use super::{db::DB, entity::Movie, errors::Error};
 impl DB {
     pub async fn create_movie(&self, movie: Movie) -> Result<Movie, Error> {
-        let created_at = chrono::offset::Utc::now();
         let result = sqlx::query!(
             "
         INSERT INTO movies (title, director, relise_date, rating, poster_id, created_at) 

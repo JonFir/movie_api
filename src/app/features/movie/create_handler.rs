@@ -56,10 +56,10 @@ async fn make_response(
     )
     .ok_or(Error::CorruptedPosterPath)?;
 
-    let posterExist = web::block(move || posters::posters::is_exist(&path))
+    let poster_exist = web::block(move || posters::posters::is_exist(&path))
         .await
         .map_err(|e| Error::BlockError(e))?;
-    if !posterExist {
+    if !poster_exist {
         return Err(Error::PosterNotFound);
     }
 

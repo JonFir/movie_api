@@ -1,7 +1,4 @@
-use chrono::{
-    serde::{ts_seconds, ts_seconds_option},
-    DateTime, Utc,
-};
+use chrono::{serde::ts_seconds_option, DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
 use crate::app::database;
