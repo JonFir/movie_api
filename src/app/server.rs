@@ -37,7 +37,8 @@ pub async fn run(address: (String, u16), state: Arc<AppState>) -> Result<(), std
                 app_state: Arc::clone(&state),
             })
             .service(features::movie::create)
-            .service(features::movie::movie);
+            .service(features::movie::movie)
+            .service(features::movie::list);
 
         // upload_handler
         let global_scope = hello;

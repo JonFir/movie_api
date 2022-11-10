@@ -1,3 +1,5 @@
+use sqlx::{Execute, QueryBuilder, Sqlite};
+
 use super::{db::DB, entity::Movie, errors::Error};
 impl DB {
     pub async fn create_movie(&self, movie: Movie) -> Result<Movie, Error> {
@@ -39,20 +41,25 @@ impl DB {
         .map_err(|e| Error::Other(e))?;
         Ok(movie)
     }
-    pub async fn all_movies(&self, cursor: i64, count: i64) -> Result<Vec<Movie>, Error> {
-        let movie = sqlx::query_as_unchecked!(
-            Movie,
-            "SELECT *
-            FROM movies as m
-            WHERE id < $1
-            LIMIT $2",
-            cursor,
-            count,
-        )
-        .fetch_all(&self.pool)
-        .await
-        .map_err(|e| Error::Other(e))?;
-        Ok(movie)
+    pub async fn all_movies(&self, cursor: Option<i64>, count: i64) -> Result<Vec<Movie>, Error> {
+        let mut b: QueryBuilder<Sqlite> = QueryBuilder::new("SELECT * FROM movies WHERE id < ");
+        match cursor {
+            Some(cursor) => {
+                b.push_bind(cursor);
+            }
+            None => {
+                b.push("(SELECT MAX(id) FROM movies)");
+            }
+        }
+        b.push(" ORDER BY id DESC");
+        b.push(" LIMIT ");
+        b.push_bind(count);
+        let some = b.build_query_as::<Movie>();
+        let movies = some
+            .fetch_all(&self.pool)
+            .await
+            .map_err(|e| Error::Other(e))?;
+        Ok(movies)
     }
     pub async fn delete_movie(&self, id: i64) -> Result<(), Error> {
         sqlx::query!(

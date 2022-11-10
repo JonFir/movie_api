@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::app::database;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Movie {
     pub id: Option<i64>,
     pub title: String,
