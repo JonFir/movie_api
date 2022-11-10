@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{get, middleware::Logger, web, App, HttpResponse, HttpServer, Responder};
 
 use super::{
     features::{self, auth::middleware::Middleware},
@@ -14,6 +14,7 @@ async fn hello() -> impl Responder {
 }
 
 pub async fn run(address: (String, u16), state: Arc<AppState>) -> Result<(), std::io::Error> {
+    env_logger::init();
     HttpServer::new(move || {
         let app_data = web::Data::new(Arc::clone(&state));
 
@@ -44,7 +45,10 @@ pub async fn run(address: (String, u16), state: Arc<AppState>) -> Result<(), std
         // upload_handler
         let global_scope = hello;
         let upload_file_size_limit = 1024 * 1024 * state.environment.upload_file_size_limit;
+
+        let logger = Logger::default();
         App::new()
+            .wrap(logger)
             .app_data(app_data)
             .service(auth_scope)
             .service(api_scope)
