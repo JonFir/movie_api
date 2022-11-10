@@ -1,4 +1,4 @@
-use sqlx::{Execute, QueryBuilder, Sqlite};
+use sqlx::{QueryBuilder, Sqlite};
 
 use super::{db::DB, entity::Movie, errors::Error};
 impl DB {
@@ -61,8 +61,9 @@ impl DB {
             .map_err(|e| Error::Other(e))?;
         Ok(movies)
     }
-    pub async fn delete_movie(&self, id: i64) -> Result<(), Error> {
-        sqlx::query!(
+
+    pub async fn delete_movie(&self, id: i64) -> Result<u64, Error> {
+        let result = sqlx::query!(
             "DELETE FROM movies
             WHERE id = $1",
             id,
@@ -70,6 +71,6 @@ impl DB {
         .execute(&self.pool)
         .await
         .map_err(|e| Error::Other(e))?;
-        Ok(())
+        Ok(result.rows_affected())
     }
 }

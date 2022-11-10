@@ -49,3 +49,6 @@ curl --location --request GET 'http://127.0.0.1:8080/movies/' \
     "cursor": 8,
     "count": 20
 }'
+
+curl --location --request DELETE 'http://127.0.0.1:8080/movies/1' \
+--header 'Authorization: Bearer i4yO0lCy94mDpxGU8c4vecOUIOlvI96Wex6E1YtQpUkVlNBxXuoIf7XNf7vB96uuDC4dwMdJWVKwDUoy6fYuRMhCrQEY2GpIwIeqeCNw5DerepaJVH2IuiKoRZOIhg0ZPLj43X6bWdwQvXdNxTfXaMpNj0iOy42y7GuYAAj23SqmMx1FBIayiGKjKnv8AXJ77rSMvutyX7HBGhaNWnJA8P3ZQe4ssGo5JbITCWznqJ8HF18GCd0wi12wU8UStDN'
