@@ -1,6 +1,8 @@
 use uuid::Uuid;
 
-use super::{db::DB, entity::User, errors::Error};
+use crate::app::errors::Error;
+
+use super::{db::DB, entity::User};
 
 impl DB {
     pub async fn create_user(
@@ -20,14 +22,7 @@ impl DB {
             email,
         )
         .execute(&self.pool)
-        .await
-        .map_err(|error| {
-            let e = error.as_database_error().and_then(|e| e.code());
-            match e {
-                Some(err) if err.eq("2067") => Error::AlreadyExist(error),
-                _ => Error::Other(error),
-            }
-        })?;
+        .await?;
 
         let user = User {
             id,
@@ -47,13 +42,12 @@ impl DB {
             username,
         )
         .fetch_optional(&self.pool)
-        .await
-        .map_err(|e| Error::NotFound(e))?;
+        .await?;
         Ok(user)
     }
 
     pub async fn find_by_token(&self, token: &str) -> Result<Option<User>, Error> {
-        sqlx::query_as_unchecked!(
+        let user = sqlx::query_as_unchecked!(
             User,
             "
             SELECT u.id, u.username, u.email, u.hash
@@ -63,8 +57,8 @@ impl DB {
             token,
         )
         .fetch_optional(&self.pool)
-        .await
-        .map_err(|e| Error::NotFound(e))
+        .await?;
+        Ok(user)
     }
 
     pub async fn set_remember_tokens(&self, id: &str, token: &str) -> Result<(), Error> {
@@ -76,8 +70,7 @@ impl DB {
             token,
         )
         .execute(&self.pool)
-        .await
-        .map_err(|e| Error::Other(e))?;
+        .await?;
         Ok(())
     }
 }

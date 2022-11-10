@@ -5,11 +5,10 @@ use serde::Serialize;
 
 use crate::app::{
     error_response::{ErrorMeta, ErrorResponse},
+    errors::Error,
     response_payload::ResponsePayload,
     state::AppState,
 };
-
-use super::errors::Error;
 
 #[delete("/{id}")]
 pub async fn handler(

@@ -5,11 +5,12 @@ use serde::{Deserialize, Serialize};
 
 use crate::app::{
     error_response::{ErrorMeta, ErrorResponse},
+    errors::Error,
     response_payload::ResponsePayload,
     state::AppState,
 };
 
-use super::{entity::Movie, errors::Error};
+use super::entity::Movie;
 
 #[get("/")]
 pub async fn handler(

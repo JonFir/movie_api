@@ -10,12 +10,11 @@ use serde::Serialize;
 
 use crate::app::{
     error_response::{ErrorMeta, ErrorResponse},
+    errors::Error,
     posters::posters,
     response_payload::ResponsePayload,
     state::AppState,
 };
-
-use super::errors::Error;
 
 #[post("/upload")]
 pub async fn upload_handler(
@@ -57,15 +56,11 @@ async fn make_response(body: Bytes, data: Data<Arc<AppState>>) -> Result<Respons
     }
 
     let id = uuid::Uuid::new_v4().to_string();
-    let path = posters::make_poster_path(&id, &data.environment.posters_path)
-        .ok_or(Error::CorruptedPath)?;
+    let path = posters::make_poster_path(&id, &data.environment.posters_path)?;
 
-    let result = web::block(move || posters::safe_poster(&path, &bytes))
-        .await
-        .map_err(|e| Error::BlockError(e))?
-        .map(|_| Response { poster_id: id })
-        .map_err(|e| Error::PosterError(e));
-    result
+    web::block(move || posters::safe_poster(&path, &bytes)).await??;
+    let result = Response { poster_id: id };
+    Ok(result)
 }
 
 #[derive(Serialize)]

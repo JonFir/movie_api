@@ -1,6 +1,8 @@
 use sqlx::{QueryBuilder, Sqlite};
 
-use super::{db::DB, entity::Movie, errors::Error};
+use crate::app::errors::Error;
+
+use super::{db::DB, entity::Movie};
 impl DB {
     pub async fn create_movie(&self, movie: Movie) -> Result<Movie, Error> {
         let result = sqlx::query!(
@@ -15,14 +17,7 @@ impl DB {
             movie.created_at,
         )
         .execute(&self.pool)
-        .await
-        .map_err(|error| {
-            let e = error.as_database_error().and_then(|e| e.code());
-            match e {
-                Some(err) if err.eq("2067") => Error::AlreadyExist(error),
-                _ => Error::Other(error),
-            }
-        })?;
+        .await?;
         let id = result.last_insert_rowid();
         let movie = Movie { id, ..movie };
         Ok(movie)
@@ -37,8 +32,7 @@ impl DB {
             id,
         )
         .fetch_optional(&self.pool)
-        .await
-        .map_err(|e| Error::Other(e))?;
+        .await?;
         Ok(movie)
     }
     pub async fn all_movies(&self, cursor: Option<i64>, count: i64) -> Result<Vec<Movie>, Error> {
@@ -55,10 +49,7 @@ impl DB {
         b.push(" LIMIT ");
         b.push_bind(count);
         let some = b.build_query_as::<Movie>();
-        let movies = some
-            .fetch_all(&self.pool)
-            .await
-            .map_err(|e| Error::Other(e))?;
+        let movies = some.fetch_all(&self.pool).await?;
         Ok(movies)
     }
 
@@ -69,8 +60,7 @@ impl DB {
             id,
         )
         .execute(&self.pool)
-        .await
-        .map_err(|e| Error::Other(e))?;
+        .await?;
         Ok(result.rows_affected())
     }
 }

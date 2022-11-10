@@ -1,6 +1,6 @@
 use argon2::{Config, ThreadMode, Variant, Version};
 
-use crate::app::features::auth::{errors::Error, random_string};
+use crate::app::{errors::Error, features::auth::random_string};
 
 pub fn new(password: &str) -> Result<String, Error> {
     let salt = random_string::new(128);

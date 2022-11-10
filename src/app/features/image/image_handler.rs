@@ -10,11 +10,10 @@ use file_format::FileFormat;
 
 use crate::app::{
     error_response::{ErrorMeta, ErrorResponse},
+    errors::Error,
     posters,
     state::AppState,
 };
-
-use super::errors::Error;
 
 #[get("/{id}")]
 pub async fn handler(
@@ -25,7 +24,7 @@ pub async fn handler(
     let result = make_response(id, data).await;
     match result {
         Ok(response) => Ok(response),
-        Err(e @ Error::FileNotFound) => {
+        Err(e @ Error::NotFound) => {
             let r = ErrorResponse {
                 meta: ErrorMeta::NOT_FOUND,
                 parent: e.into(),
@@ -43,18 +42,16 @@ pub async fn handler(
 }
 
 async fn make_response(id: String, data: Data<Arc<AppState>>) -> Result<HttpResponse, Error> {
-    let path = posters::posters::make_poster_path(&id, &data.environment.posters_path)
-        .ok_or(Error::CorruptedPath)?;
+    let path = posters::posters::make_poster_path(&id, &data.environment.posters_path)?;
 
     let file = web::block(|| {
         if posters::posters::is_exist(&path) {
             fs::read(path).map_err(|e| Error::FSError(e))
         } else {
-            Err(Error::FileNotFound)
+            Err(Error::NotFound)
         }
     })
-    .await
-    .map_err(|e| Error::BlockError(e))??;
+    .await??;
     let file_format = FileFormat::from_bytes(&file);
     let response = HttpResponseBuilder::new(StatusCode::OK)
         .insert_header((header::CONTENT_TYPE, file_format.media_type()))

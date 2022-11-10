@@ -1,18 +1,20 @@
 use std::{fs, io::Write, path::Path};
 
-use super::errors::Error;
+use crate::app::errors::Error;
 
-pub fn make_poster_path(id: &str, folder_path: &str) -> Option<String> {
-    Path::new(".")
+pub fn make_poster_path(id: &str, folder_path: &str) -> Result<String, Error> {
+    let path = Path::new(".")
         .join(folder_path)
         .join(&id)
         .to_str()
-        .map(|p| p.to_owned())
+        .ok_or(Error::CorruptedFSPath)?
+        .to_owned();
+    Ok(path)
 }
 
 pub fn safe_poster(path: &str, bytes: &[u8]) -> Result<(), Error> {
-    let mut file = fs::File::create(path).map_err(|e| Error::FSError(e))?;
-    file.write(&bytes).map_err(|e| Error::FSError(e))?;
+    let mut file = fs::File::create(path)?;
+    file.write(&bytes)?;
     Ok(())
 }
 

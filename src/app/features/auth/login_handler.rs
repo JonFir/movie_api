@@ -5,24 +5,39 @@ use serde::{Deserialize, Serialize};
 
 use crate::app::{
     error_response::{ErrorMeta, ErrorResponse},
+    errors::Error,
     response_payload::ResponsePayload,
     state::AppState,
 };
 
-use super::{enity::User, errors::Error, password_hash, random_string};
+use super::{enity::User, password_hash, random_string};
 
 #[post("/login")]
 pub async fn login_handler(
     payload: web::Json<Payload>,
     data: web::Data<Arc<AppState>>,
 ) -> Result<impl Responder, ErrorResponse> {
-    let response = make_response(payload, data)
-        .await
-        .map_err(|e| ErrorResponse {
-            meta: ErrorMeta::USER_NOT_FOUND,
-            parent: e.into(),
-        })?;
-    Ok(ResponsePayload::succes("Login was success", response))
+    let result = make_response(payload, data).await;
+    match result {
+        Ok(response) => {
+            let response = ResponsePayload::succes("Login was success", response);
+            Ok(response)
+        }
+        Err(e @ Error::IncorectLogin) | Err(e @ Error::IncorectPassword) => {
+            let r = ErrorResponse {
+                meta: ErrorMeta::USER_NOT_FOUND,
+                parent: e.into(),
+            };
+            Err(r)
+        }
+        Err(e) => {
+            let r = ErrorResponse {
+                meta: ErrorMeta::INTERNAL,
+                parent: e.into(),
+            };
+            Err(r)
+        }
+    }
 }
 
 async fn make_response(

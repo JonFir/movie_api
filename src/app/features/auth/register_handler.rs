@@ -9,7 +9,7 @@ use serde::Deserialize;
 
 use crate::app::{
     error_response::{ErrorMeta, ErrorResponse},
-    features::auth::errors::Error,
+    errors::Error,
     response_payload::ResponsePayload,
     state::AppState,
 };
@@ -27,7 +27,7 @@ pub async fn register_handler(
             let respose = ResponsePayload::succes_and_empty("User did registered");
             Ok(respose)
         }
-        Err(e @ Error::UserAlreadyExist(_)) => {
+        Err(e @ Error::DBKeyDublicate(_)) => {
             let r = ErrorResponse {
                 meta: ErrorMeta::USER_EXIST,
                 parent: e.into(),

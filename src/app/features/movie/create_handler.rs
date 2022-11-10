@@ -9,12 +9,13 @@ use serde::{Deserialize, Serialize};
 
 use crate::app::{
     error_response::{ErrorMeta, ErrorResponse},
+    errors::Error,
     posters,
     response_payload::ResponsePayload,
     state::AppState,
 };
 
-use super::{entity::Movie, errors::Error};
+use super::entity::Movie;
 
 #[post("/")]
 pub async fn handler(
@@ -27,7 +28,7 @@ pub async fn handler(
             let respose = ResponsePayload::succes("Movie was created", r);
             Ok(respose)
         }
-        Err(e @ Error::PosterNotFound) => {
+        Err(e @ Error::NotFound) => {
             let r = ErrorResponse {
                 meta: ErrorMeta::make_bad_request("Poster with this id not found".into()),
                 parent: e.into(),
@@ -53,14 +54,13 @@ async fn make_response(
     let path = posters::posters::make_poster_path(
         &payload.movie.poster_id,
         &data.environment.posters_path,
-    )
-    .ok_or(Error::CorruptedPosterPath)?;
+    )?;
 
     let poster_exist = web::block(move || posters::posters::is_exist(&path))
         .await
-        .map_err(|e| Error::BlockError(e))?;
+        .map_err(|e| Error::ActixBlockError(e))?;
     if !poster_exist {
-        return Err(Error::PosterNotFound);
+        return Err(Error::NotFound);
     }
 
     let movie = data.database.create_movie(payload.movie.into()).await?;

@@ -12,9 +12,9 @@ use std::{
 };
 
 use crate::app::{
+    self,
     database::entity::User,
     error_response::{ErrorMeta, ErrorResponse},
-    features::auth,
     state::AppState,
 };
 
@@ -24,7 +24,7 @@ pub struct AuthService<S> {
 }
 
 impl<S> AuthService<S> {
-    fn extract_token_from_headers(headers: &HeaderMap) -> Result<String, auth::errors::Error> {
+    fn extract_token_from_headers(headers: &HeaderMap) -> Result<String, app::errors::Error> {
         let token_parts = headers
             .get("Authorization")
             .and_then(|v| v.to_str().ok())
@@ -33,23 +33,23 @@ impl<S> AuthService<S> {
             .collect::<Vec<&str>>();
 
         if token_parts.len() != 2 || !token_parts.first().unwrap_or(&"").eq(&"Bearer") {
-            return Err(auth::errors::Error::MissingToken);
+            return Err(app::errors::Error::MissingAuthToken);
         }
         let token = token_parts[1].to_owned();
         Ok(token)
     }
 
     async fn user_from_token(
-        token: Result<String, auth::errors::Error>,
+        token: Result<String, app::errors::Error>,
         app_state: Arc<AppState>,
-    ) -> Result<User, auth::errors::Error> {
+    ) -> Result<User, app::errors::Error> {
         let token = token?;
         app_state
             .database
             .find_by_token(&token)
             .await
-            .map_err(|e| auth::errors::Error::from(e))
-            .and_then(|user| user.ok_or(auth::errors::Error::UserNotFound))
+            .map_err(|e| e.into())
+            .and_then(|user| user.ok_or(app::errors::Error::UserNotFound))
     }
 }
 
@@ -80,14 +80,9 @@ where
                 }
                 Err(e) => {
                     let meta = match e {
-                        auth::errors::Error::MissingToken => ErrorMeta::ACCESS_TOKEN_MISSING,
-                        auth::errors::Error::UserNotFound => ErrorMeta::USER_NOT_FOUND,
-                        auth::errors::Error::IncorectLogin
-                        | auth::errors::Error::IncorectPassword
-                        | auth::errors::Error::UserAlreadyExist(_)
-                        | auth::errors::Error::QueryFail(_)
-                        | auth::errors::Error::PasswordHashingFail(_)
-                        | auth::errors::Error::PasswordVerifyFail(_) => ErrorMeta::INTERNAL,
+                        app::errors::Error::MissingAuthToken => ErrorMeta::ACCESS_TOKEN_MISSING,
+                        app::errors::Error::UserNotFound => ErrorMeta::USER_NOT_FOUND,
+                        _ => ErrorMeta::INTERNAL,
                     };
                     let (request, _) = request.into_parts();
                     let response = ErrorResponse {

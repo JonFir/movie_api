@@ -1,6 +1,5 @@
 mod create_handler;
 mod delete_handler;
-pub mod errors;
 mod list_handler;
 mod single_handler;
 pub use create_handler::handler as create;

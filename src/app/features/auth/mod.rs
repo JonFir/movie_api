@@ -1,4 +1,3 @@
-pub mod errors;
 mod login_handler;
 mod register_handler;
 pub use login_handler::login_handler as login;
