@@ -1,3 +1,4 @@
+use chrono::Utc;
 use sqlx::{QueryBuilder, Sqlite};
 
 use crate::app::errors::Error;
@@ -5,6 +6,11 @@ use crate::app::errors::Error;
 use super::{db::DB, entity::Movie};
 impl DB {
     pub async fn create_movie(&self, movie: Movie) -> Result<Movie, Error> {
+        let created_at = Utc::now().naive_utc();
+        let movie = Movie {
+            created_at,
+            ..movie
+        };
         let result = sqlx::query!(
             "
         INSERT INTO movies (title, director, relise_date, rating, poster_id, created_at) 
@@ -24,11 +30,11 @@ impl DB {
     }
 
     pub async fn find_movie_by_id(&self, id: i64) -> Result<Option<Movie>, Error> {
-        let movie = sqlx::query_as_unchecked!(
+        let movie = sqlx::query_as!(
             Movie,
             "SELECT *
             FROM movies as m
-            WHERE id = $1",
+            WHERE m.id = $1",
             id,
         )
         .fetch_optional(&self.pool)

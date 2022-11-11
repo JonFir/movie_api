@@ -1,4 +1,4 @@
-use chrono::{serde::ts_seconds_option, DateTime, Utc};
+use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 
 use crate::app::database;
@@ -8,11 +8,10 @@ pub struct Movie {
     pub id: Option<i64>,
     pub title: String,
     pub director: String,
-    pub relise_date: i16,
-    pub rating: i8,
+    pub relise_date: i64,
+    pub rating: i64,
     pub poster_id: String,
-    #[serde(with = "ts_seconds_option")]
-    pub created_at: Option<DateTime<Utc>>,
+    pub created_at: Option<NaiveDateTime>,
 }
 
 impl From<database::entity::Movie> for Movie {
@@ -38,7 +37,7 @@ impl Into<database::entity::Movie> for Movie {
             relise_date: self.relise_date,
             rating: self.rating,
             poster_id: self.poster_id,
-            created_at: self.created_at.unwrap_or(chrono::offset::Utc::now()),
+            created_at: self.created_at.unwrap_or(NaiveDateTime::default()),
         }
     }
 }

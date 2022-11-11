@@ -34,10 +34,10 @@ impl DB {
     }
 
     pub async fn find_by_username(&self, username: &str) -> Result<Option<User>, Error> {
-        let user = sqlx::query_as_unchecked!(
+        let user = sqlx::query_as!(
             User,
             "SELECT *
-            FROM users as u
+            FROM users
             WHERE username = $1",
             username,
         )
@@ -47,13 +47,13 @@ impl DB {
     }
 
     pub async fn find_by_token(&self, token: &str) -> Result<Option<User>, Error> {
-        let user = sqlx::query_as_unchecked!(
+        let user = sqlx::query_as!(
             User,
             "
             SELECT u.id, u.username, u.email, u.hash
             FROM users as u 
             JOIN remember_tokens as rt ON u.id = rt.user_id
-            WHERE token = $1",
+            WHERE rt.token = $1",
             token,
         )
         .fetch_optional(&self.pool)
