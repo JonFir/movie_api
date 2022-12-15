@@ -11,10 +11,9 @@ use crate::app::{
 };
 
 use super::entity::Movie;
-
 #[get("/")]
 pub async fn handler(
-    payload: web::Json<Payload>,
+    payload: web::Query<Payload>,
     data: web::Data<Arc<AppState>>,
 ) -> Result<impl Responder, ErrorResponse> {
     let result = make_response(payload, data).await;
@@ -34,7 +33,7 @@ pub async fn handler(
 }
 
 async fn make_response(
-    payload: web::Json<Payload>,
+    payload: web::Query<Payload>,
     data: web::Data<Arc<AppState>>,
 ) -> Result<Response, Error> {
     let movies = data
